@@ -1,0 +1,236 @@
+---
+description: "Environment setup, Docker commands, service management, and development workflow. Use when setting up the project, managing services, or troubleshooting connectivity issues."
+alwaysApply: false
+---
+
+# Development Workflow - Agent Requested
+
+This rule provides comprehensive setup and workflow commands for the LangGraph RAG project.
+
+> **📋 Configuration Reference**: See @project-fundamentals for all service URLs, model names, and configuration constants.
+
+## Environment Setup Commands
+
+### Initial Setup
+```bash
+# Install dependencies using uv
+uv sync
+
+# Start Docker services (Ollama and Qdrant)
+docker-compose up -d
+
+# Verify Docker services
+docker-compose ps
+
+# Check services are healthy (URLs from project-fundamentals)
+curl http://localhost:11434/api/tags  # Ollama - from project-fundamentals
+curl http://localhost:6333/collections  # Qdrant - from project-fundamentals
+```
+
+### Ollama Model Management
+```bash
+# Check Ollama version (should be 0.11.10+)
+ollama -v
+
+# Pull required models (names from project-fundamentals)
+ollama pull gpt-oss:20b  # From project-fundamentals
+ollama pull embeddinggemma:latest  # From project-fundamentals
+
+# List available models
+ollama list
+
+# Test model (optional, model name from project-fundamentals)
+ollama run gpt-oss:20b "Hello, test message"  # From project-fundamentals
+```
+
+### Service URLs
+> **Note**: All URLs defined in @project-fundamentals
+- **Ollama API**: http://localhost:11434
+- **Qdrant Dashboard**: http://localhost:6333/dashboard
+- **Qdrant API**: http://localhost:6333
+
+## Notebook Execution Order
+
+### Workflow Steps
+1. **First**: Run `Ollama_Setup_and_Testing.ipynb`
+   - Verify Ollama installation and models
+   - Test embeddings with LangChain connectors
+   - Test model inference
+   - Confirm all setup is working
+
+2. **Second**: Run `Assignment_Introduction_to_LCEL_and_LangGraph_LangChain_Powered_RAG.ipynb`
+   - Main assignment notebook
+   - Implements the RAG system
+   - Contains breakout room activities
+
+3. **Kernel Selection**: Always select the venv created by `uv sync`
+
+## Development Commands
+
+### Service Management
+```bash
+# Start services in background
+docker-compose up -d
+
+# View service logs
+docker-compose logs ollama
+docker-compose logs qdrant
+
+# Stop services
+docker-compose down
+
+# Restart services
+docker-compose restart
+
+# Check service status
+docker-compose ps
+```
+
+### Python Environment
+```bash
+# Activate virtual environment (if needed)
+source .venv/bin/activate  # Linux/Mac
+# or
+.venv\Scripts\activate  # Windows
+
+# Run Python script
+python lcel-langchain-langgraph.py
+
+# Start Jupyter with correct kernel
+jupyter notebook
+```
+
+### Data Management
+```bash
+# Check data directory
+ls -la data/
+
+# Verify PDF files are present
+find data/ -name "*.pdf"
+```
+
+## LangSmith Integration (Optional)
+
+### Environment Variables
+```bash
+# Set LangSmith environment variables (values from project-fundamentals)
+export LANGCHAIN_TRACING_V2=true  # From project-fundamentals
+export LANGCHAIN_API_KEY="your-api-key"
+export LANGCHAIN_PROJECT="RAG-Assignment"  # From project-fundamentals
+
+# Or set in Python
+import os
+# LangSmith config from project-fundamentals
+os.environ["LANGCHAIN_TRACING_V2"] = "true"  # From project-fundamentals
+os.environ["LANGCHAIN_API_KEY"] = "your-key"
+os.environ["LANGCHAIN_PROJECT"] = "RAG-Assignment"  # From project-fundamentals
+```
+
+## Troubleshooting
+
+### Common Issues
+```bash
+# If Ollama not responding
+sudo systemctl restart ollama  # Linux
+# or restart Docker container
+docker-compose restart ollama
+
+# If Qdrant connection fails
+docker-compose logs qdrant
+docker-compose restart qdrant
+
+# If models not found (model names from project-fundamentals)
+ollama pull gpt-oss:20b  # From project-fundamentals
+ollama pull embeddinggemma:latest  # From project-fundamentals
+
+# Check available models
+ollama list
+```
+
+### Service Verification
+```python
+# Python code to verify services
+import requests
+
+# Test Ollama (URL from project-fundamentals)
+try:
+    response = requests.get('http://localhost:11434/api/tags')  # From project-fundamentals
+    print(f"Ollama status: {response.status_code}")
+except:
+    print("Ollama not accessible")
+
+# Test Qdrant (URL from project-fundamentals)
+try:
+    response = requests.get('http://localhost:6333/collections')  # From project-fundamentals
+    print(f"Qdrant status: {response.status_code}")
+except:
+    print("Qdrant not accessible")
+```
+
+## File Operations
+
+### Adding New Documents
+```python
+# Process new PDFs
+from langchain_community.document_loaders import DirectoryLoader, PyMuPDFLoader
+
+# Load new documents (patterns from project-fundamentals)
+loader = DirectoryLoader("data", glob="**/*.pdf", loader_cls=PyMuPDFLoader)  # From project-fundamentals
+new_documents = loader.load()
+
+# Chunk and add to vector store
+chunks = text_splitter.split_documents(new_documents)
+vector_store.add_documents(documents=chunks)
+```
+
+### Collection Management
+```python
+# Check existing collections
+from qdrant_client import QdrantClient
+
+client = QdrantClient(host="localhost", port=6333)  # URL from project-fundamentals
+collections = client.get_collections()
+print(collections)
+
+# Delete collection (if needed)
+# client.delete_collection("ai_usage_knowledge_index")  # Collection name from project-fundamentals
+```
+
+## Assignment Specifics
+
+### Breakout Room #1 Tasks
+1. Install and run Ollama
+2. Pull required models (gpt-oss:20b, embeddinggemma:latest)
+3. Test embeddings and inference
+
+### Breakout Room #2 Tasks
+1. Install LangGraph
+2. Understand States and Nodes
+3. Build Basic Graph
+4. Implement Simple RAG Graph
+5. Extend Graph with Complex Flows
+
+### Key Questions
+> **Note**: Values defined in @project-fundamentals
+- **Question #1**: Embedding dimension = 768  # From project-fundamentals
+- **Question #2**: Graph extensions (error handling, fact-checking, fallback retrievers)
+
+## Best Practices
+
+### Before Development
+1. Verify Docker services are running
+2. Confirm models are pulled
+3. Test service connectivity
+4. Select correct Python kernel
+
+### During Development
+1. Use incremental testing
+2. Monitor resource usage
+3. Check logs for errors
+4. Save work frequently
+
+### After Development
+1. Test full workflow
+2. Verify outputs
+3. Check performance
+4. Document changes

@@ -56,7 +56,7 @@ Next, run the Assignment notebook and complete the contained tasks:
 # Submitting Your Homework
 
 Follow these steps to prepare and submit your homework:
-1. Create a branch of your `AIE7` repo to track your changes. Example command: `git checkout -b s04-assignment`
+1. Create a branch of your `AIE8` repo to track your changes. Example command: `git checkout -b s04-assignment`
 2. Responding to the activities and questions in both the `Assignment_Introduction_to_LCEL_and_LangGraph_LangChain_Powered_RAG.ipynb`and `LangSmith_and_Evaluation` notebooks:
     + Option 1: Provide your responses in a separate markdown document:
       + Create a markdown document in the `04_Production_RAG` folder of your assignment branch (for example “ACTIVITIES_QUESTIONS.md”):

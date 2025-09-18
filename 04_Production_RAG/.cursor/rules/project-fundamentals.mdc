@@ -1,0 +1,101 @@
+---
+alwaysApply: true
+description: "Core project context and fundamental constants for LangGraph RAG system"
+---
+
+# Project Fundamentals - Always Apply
+
+You are working on a **Production RAG system using LangGraph** to analyze "How People Use AI" research papers.
+
+## Core Project Context
+
+This is a LangGraph-based RAG (Retrieval-Augmented Generation) system that:
+- Processes PDF research papers about AI usage patterns
+- Uses local LLM inference via Ollama (gpt-oss:20b for chat, embeddinggemma for embeddings)
+- Stores vector embeddings in Qdrant (running in Docker on port 6333)
+- Implements a stateful graph workflow with retrieve → generate nodes
+
+## Critical Constants & Configuration
+
+> **⚠️ SINGLE SOURCE OF TRUTH**: All configuration values defined here. Reference this section from other rules.
+
+### Service Configuration
+- **Ollama API URL**: http://localhost:11434
+- **Qdrant API URL**: http://localhost:6333
+- **Qdrant Dashboard**: http://localhost:6333/dashboard
+
+### Model Configuration
+- **Chat model**: gpt-oss:20b
+  - **Temperature**: 0.6
+  - **Minimum Ollama version**: 0.11.10+
+- **Embedding model**: embeddinggemma:latest
+  - **Embedding dimension**: 768 - NEVER change this
+  - **Distance metric**: Cosine similarity
+
+### Vector Store Configuration
+- **Collection name**: "ai_usage_knowledge_index"
+- **Retriever k value**: 5 documents
+- **Vector size**: 768 (must match embedding dimension)
+
+### Document Processing Configuration
+- **Text splitter**: RecursiveCharacterTextSplitter
+- **Chunk size**: 750 tokens
+- **Chunk overlap**: 0
+- **Tokenizer**: tiktoken cl100k_base encoding
+- **File glob pattern**: "**/*.pdf"
+- **Document loader**: PyMuPDFLoader
+
+### Environment Configuration
+- **Python manager**: uv
+- **Container orchestration**: docker-compose
+- **Jupyter kernel**: venv created by `uv sync`
+
+### LangSmith Configuration (Optional)
+- **Tracing variable**: LANGCHAIN_TRACING_V2=true
+- **Project name**: RAG-Assignment
+- **API endpoint**: https://api.smith.langchain.com
+
+## File Structure
+```
+04_Production_RAG/
+├── data/                  # PDF documents
+├── .cursor/rules/         # Modern Cursor rules (2025)
+├── docker-compose.yml     # Ollama & Qdrant services
+├── pyproject.toml        # Python dependencies (uv)
+├── CLAUDE.md            # Claude Code instructions
+├── Ollama_Setup_and_Testing.ipynb
+├── Assignment_Introduction_to_LCEL_and_LangGraph_LangChain_Powered_RAG.ipynb
+└── lcel-langchain-langgraph.py
+```
+
+## Assignment Questions (Reference)
+- **Question #1**: Embedding dimension is **768**
+- **Question #2**: Consider adding error handling nodes, fact-checking steps, or fallback retrievers
+
+## Core Principles
+1. **Always verify services are running** before executing code
+2. **Never change embedding dimensions** (768 for embeddinggemma)
+3. **Use Docker Compose** for consistent service management
+4. **Follow LCEL patterns** for chain composition
+5. **Return dicts from nodes** - never return other types
+6. **Handle missing context** with "I don't know" responses
+
+## Rule System Usage Guide
+
+### How to Use Cursor Rules
+- **Always Rules**: `project-fundamentals.mdc` - Applied automatically (this file)
+- **Auto-Attached Rules**: `langgraph-patterns.mdc` - Applied when working with `.py` or `.ipynb` files
+- **Agent-Requested Rules**: `development-workflow.mdc` - AI decides when to use for setup/workflow tasks
+- **Manual Rules**: `debugging-helpers.mdc` - Use `@debugging-helpers` to activate
+
+### Cross-References
+- **Configuration**: All values defined in this file (@project-fundamentals)
+- **Implementation Patterns**: See @langgraph-patterns for coding examples
+- **Environment Setup**: See @development-workflow for Docker and service management
+- **Advanced Debugging**: Use @debugging-helpers for performance and monitoring
+
+### Rule Precedence
+1. **project-fundamentals.mdc** (Always) - Highest priority
+2. **langgraph-patterns.mdc** (Auto-attached) - When working with code
+3. **development-workflow.mdc** (Agent-requested) - For setup/operations
+4. **debugging-helpers.mdc** (Manual) - When explicitly requested

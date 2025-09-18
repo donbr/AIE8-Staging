@@ -1,0 +1,385 @@
+---
+description: "Advanced debugging techniques, performance profiling, LangSmith integration, and optimization strategies. Use when troubleshooting complex issues, analyzing performance, or setting up monitoring."
+alwaysApply: false
+---
+
+# Debugging Helpers - Manual Rule
+
+Use `@debugging-helpers` to activate this rule for advanced debugging and optimization.
+
+> **📋 Configuration Reference**: See @project-fundamentals for all service URLs, model names, and configuration constants.
+
+## LangSmith Integration for Debugging
+
+### Setup Tracing
+```python
+import os
+
+# Enable comprehensive tracing (values from project-fundamentals)
+os.environ["LANGCHAIN_TRACING_V2"] = "true"  # From project-fundamentals
+os.environ["LANGCHAIN_API_KEY"] = "your-langsmith-api-key"
+os.environ["LANGCHAIN_PROJECT"] = "RAG-Debugging"  # Custom for debugging
+os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"  # From project-fundamentals
+
+# Verify setup
+from langsmith import Client
+client = Client()
+print("LangSmith connected:", client.info())
+```
+
+### Trace Analysis
+```python
+# View traces programmatically
+runs = client.list_runs(project_name="RAG-Debugging")
+for run in runs:
+    print(f"Run: {run.name}, Status: {run.status}, Duration: {run.total_tokens}")
+```
+
+## Graph Debugging
+
+### Visualize Graph Structure
+```python
+# Generate graph visualization
+from IPython.display import Image, display
+
+# Compile and visualize
+compiled_graph = graph_builder.compile()
+display(compiled_graph.get_graph().draw_mermaid_png())
+
+# Or save to file
+with open("graph_structure.png", "wb") as f:
+    f.write(compiled_graph.get_graph().draw_mermaid_png())
+```
+
+### Step-by-Step Execution
+```python
+# Debug with checkpoints
+from langgraph.checkpoint.memory import MemorySaver
+
+memory = MemorySaver()
+debuggable_graph = graph_builder.compile(checkpointer=memory)
+
+# Execute with thread tracking
+config = {"configurable": {"thread_id": "debug-thread"}}
+for step in debuggable_graph.stream(
+    {"question": "test query"},
+    config=config
+):
+    print(f"Step: {step}")
+    print("Current state keys:", list(step.keys()) if step else "None")
+```
+
+### State Inspection
+```python
+# Inspect state at any point
+current_state = debuggable_graph.get_state(config)
+print("Current state:", current_state.values)
+print("Next steps:", current_state.next)
+print("Metadata:", current_state.metadata)
+```
+
+## Performance Profiling
+
+### Execution Timing
+```python
+import time
+from functools import wraps
+
+def time_node(func):
+    @wraps(func)
+    def wrapper(state):
+        start_time = time.time()
+        result = func(state)
+        execution_time = time.time() - start_time
+        print(f"{func.__name__} took {execution_time:.2f}s")
+        return result
+    return wrapper
+
+# Apply to nodes
+@time_node
+def retrieve(state: State) -> State:
+    # ... implementation
+    return {"context": retrieved_docs}
+```
+
+### Memory Usage
+```python
+import psutil
+import os
+
+def check_memory():
+    process = psutil.Process(os.getpid())
+    memory_mb = process.memory_info().rss / 1024 / 1024
+    print(f"Memory usage: {memory_mb:.2f} MB")
+    return memory_mb
+
+# Check before/after operations
+check_memory()
+result = graph.invoke({"question": "test"})
+check_memory()
+```
+
+## Vector Store Debugging
+
+### Collection Inspection
+```python
+from qdrant_client import QdrantClient
+
+client = QdrantClient(host="localhost", port=6333)
+
+# Check collection info
+collection_info = client.get_collection("ai_usage_knowledge_index")
+print(f"Vector count: {collection_info.vectors_count}")
+print(f"Index status: {collection_info.status}")
+
+# Sample vectors
+points = client.scroll(
+    collection_name="ai_usage_knowledge_index",
+    limit=5,
+    with_payload=True,
+    with_vectors=False
+)
+for point in points[0]:
+    print(f"Point ID: {point.id}")
+    print(f"Payload: {point.payload}")
+```
+
+### Search Quality Analysis
+```python
+# Analyze retrieval quality
+def debug_retrieval(query: str, k: int = 5):
+    # Get embeddings
+    query_embedding = embedding_model.embed_query(query)
+
+    # Search with scores
+    search_results = client.search(
+        collection_name="ai_usage_knowledge_index",
+        query_vector=query_embedding,
+        limit=k,
+        with_payload=True,
+        with_vectors=False
+    )
+
+    print(f"Query: {query}")
+    print(f"Results found: {len(search_results)}")
+
+    for i, result in enumerate(search_results):
+        print(f"\nResult {i+1}:")
+        print(f"Score: {result.score:.4f}")
+        print(f"Content preview: {result.payload.get('page_content', '')[:200]}...")
+
+    return search_results
+
+# Test retrieval
+debug_retrieval("How do people use AI in their work?")
+```
+
+## Model Debugging
+
+### Token Usage Tracking
+```python
+# Track token usage
+class TokenTracker:
+    def __init__(self):
+        self.total_input_tokens = 0
+        self.total_output_tokens = 0
+
+    def track_tokens(self, response):
+        if hasattr(response, 'usage_metadata'):
+            self.total_input_tokens += response.usage_metadata.get('input_tokens', 0)
+            self.total_output_tokens += response.usage_metadata.get('output_tokens', 0)
+
+        print(f"Total input tokens: {self.total_input_tokens}")
+        print(f"Total output tokens: {self.total_output_tokens}")
+
+tracker = TokenTracker()
+
+# Use with model calls
+response = chat_model.invoke(prompt)
+tracker.track_tokens(response)
+```
+
+### Response Quality Analysis
+```python
+# Analyze response patterns
+def analyze_response(question: str, context: list, response: str):
+    print(f"Question: {question}")
+    print(f"Context documents: {len(context)}")
+    print(f"Response length: {len(response)} chars")
+
+    # Check for "I don't know" responses
+    unknown_responses = ["i don't know", "i do not know", "unknown", "not sure"]
+    is_unknown = any(phrase in response.lower() for phrase in unknown_responses)
+    print(f"Unknown response: {is_unknown}")
+
+    # Check context usage
+    context_text = " ".join([doc.page_content for doc in context])
+    context_overlap = len(set(response.lower().split()) & set(context_text.lower().split()))
+    print(f"Context word overlap: {context_overlap}")
+
+    return {
+        "question": question,
+        "response_length": len(response),
+        "is_unknown": is_unknown,
+        "context_overlap": context_overlap,
+        "context_docs": len(context)
+    }
+```
+
+## Error Handling Debugging
+
+### Comprehensive Error Catching
+```python
+def robust_node(node_func):
+    def wrapper(state: State) -> State:
+        try:
+            result = node_func(state)
+            print(f"✅ {node_func.__name__} succeeded")
+            return result
+        except Exception as e:
+            print(f"❌ {node_func.__name__} failed: {e}")
+            print(f"State keys: {list(state.keys())}")
+            print(f"Error type: {type(e).__name__}")
+
+            # Return safe fallback
+            return {"error": str(e)}
+
+    return wrapper
+
+# Apply to nodes
+@robust_node
+def safe_retrieve(state: State) -> State:
+    # ... implementation
+    pass
+```
+
+### Service Health Monitoring
+```python
+import requests
+from datetime import datetime
+
+def check_all_services():
+    services = {
+        "Ollama": "http://localhost:11434/api/tags",
+        "Qdrant": "http://localhost:6333/collections"
+    }
+
+    status = {}
+    for name, url in services.items():
+        try:
+            response = requests.get(url, timeout=5)
+            status[name] = {
+                "status": "✅ Running",
+                "response_time": response.elapsed.total_seconds(),
+                "status_code": response.status_code
+            }
+        except Exception as e:
+            status[name] = {
+                "status": f"❌ Error: {e}",
+                "response_time": None,
+                "status_code": None
+            }
+
+    print(f"Service check at {datetime.now()}")
+    for name, info in status.items():
+        print(f"{name}: {info['status']}")
+        if info['response_time']:
+            print(f"  Response time: {info['response_time']:.3f}s")
+
+    return status
+
+# Regular health checks
+health_status = check_all_services()
+```
+
+## Advanced Optimization
+
+### Async Processing
+```python
+import asyncio
+from typing import List
+
+async def async_batch_process(queries: List[str]):
+    """Process multiple queries asynchronously"""
+
+    async def process_single(query: str):
+        # Simulate async processing
+        await asyncio.sleep(0.1)
+        return graph.invoke({"question": query})
+
+    # Process in parallel
+    tasks = [process_single(q) for q in queries]
+    results = await asyncio.gather(*tasks)
+
+    return results
+
+# Usage
+# results = asyncio.run(async_batch_process(["query1", "query2", "query3"]))
+```
+
+### Caching Strategies
+```python
+from functools import lru_cache
+import hashlib
+
+# Cache embeddings
+@lru_cache(maxsize=1000)
+def cached_embed_query(query: str):
+    return tuple(embedding_model.embed_query(query))
+
+# Cache retrieval results
+retrieval_cache = {}
+
+def cached_retrieve(query: str, k: int = 5):
+    cache_key = hashlib.md5(f"{query}_{k}".encode()).hexdigest()
+
+    if cache_key in retrieval_cache:
+        print(f"Cache hit for: {query[:50]}...")
+        return retrieval_cache[cache_key]
+
+    result = retriever.invoke(query)
+    retrieval_cache[cache_key] = result
+    print(f"Cache miss for: {query[:50]}...")
+
+    return result
+```
+
+## Testing Frameworks
+
+### Unit Tests for Nodes
+```python
+import unittest
+
+class TestRAGNodes(unittest.TestCase):
+    def setUp(self):
+        self.test_state = {
+            "question": "test question",
+            "context": [],
+            "response": ""
+        }
+
+    def test_retrieve_node(self):
+        result = retrieve(self.test_state)
+        self.assertIn("context", result)
+        self.assertIsInstance(result["context"], list)
+
+    def test_generate_node(self):
+        state_with_context = {
+            **self.test_state,
+            "context": [mock_document]
+        }
+        result = generate(state_with_context)
+        self.assertIn("response", result)
+        self.assertIsInstance(result["response"], str)
+
+# Run tests
+# unittest.main()
+```
+
+## Use This Rule When:
+- Investigating performance issues
+- Debugging failed graph executions
+- Analyzing retrieval quality
+- Setting up monitoring
+- Optimizing token usage
+- Testing new features

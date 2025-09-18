@@ -1,0 +1,233 @@
+---
+description: "LangGraph and LangChain patterns for stateful RAG implementation"
+globs: ["*.py", "*.ipynb"]
+alwaysApply: false
+---
+
+# LangGraph Patterns - Auto Attached for Python/Notebooks
+
+This rule activates when working with Python files or Jupyter notebooks.
+
+> **📋 Configuration Reference**: See @project-fundamentals for all configuration values, constants, and service URLs.
+
+## LangGraph State Management
+
+### State Definition
+```python
+from typing_extensions import TypedDict
+from langchain_core.documents import Document
+
+# Always define state using TypedDict
+class State(TypedDict):
+    question: str           # User query
+    context: list[Document] # Retrieved documents
+    response: str          # Generated answer
+```
+
+### Graph Structure
+- **Flow**: START → retrieve → generate → END
+- **Nodes**: Functions that modify state: `def node_name(state: State) -> State:`
+- **Graph Builder**: `graph_builder = StateGraph(State)`
+- **Sequences**: `graph_builder.add_sequence([node1, node2])`
+
+## Node Implementation Patterns
+
+### Correct Node Pattern
+```python
+# CORRECT: Return state modifications as dict
+def retrieve(state: State) -> State:
+    retrieved_docs = retriever.invoke(state["question"])
+    return {"context": retrieved_docs}
+
+def generate(state: State) -> State:
+    response = generator_chain.invoke({
+        "query": state["question"],
+        "context": state["context"]
+    })
+    return {"response": response}
+```
+
+### Critical Rules
+- **NEVER return non-dict values from nodes**
+- **Always return state modifications as dictionary**
+- **Use state["field"] to access current state**
+
+## LCEL Chain Patterns
+
+### Chain Composition
+```python
+# Build chains using pipe operator
+from langchain_core.output_parsers import StrOutputParser
+
+generator_chain = chat_prompt | ollama_chat_model | StrOutputParser()
+```
+
+### RAG Prompt Template
+```python
+from langchain_core.prompts import ChatPromptTemplate
+
+HUMAN_TEMPLATE = """
+#CONTEXT:
+{context}
+
+QUERY:
+{query}
+
+Use the provide context to answer the provided user query. Only use the provided context to answer the query. If you do not know the answer, or it's not contained in the provided context response with "I don't know"
+"""
+
+chat_prompt = ChatPromptTemplate.from_messages([
+    ("human", HUMAN_TEMPLATE)
+])
+```
+
+## Model Initialization
+
+### Ollama Models
+```python
+from langchain_ollama import ChatOllama, OllamaEmbeddings
+
+# Chat model (see @project-fundamentals for config values)
+chat_model = ChatOllama(
+    model="gpt-oss:20b",  # From project-fundamentals
+    temperature=0.6,      # From project-fundamentals
+    base_url="http://localhost:11434"  # From project-fundamentals
+)
+
+# Embedding model (see @project-fundamentals for config values)
+embedding_model = OllamaEmbeddings(
+    model="embeddinggemma:latest",  # From project-fundamentals
+    base_url="http://localhost:11434"  # From project-fundamentals
+)
+```
+
+## Vector Store Patterns
+
+### Qdrant Integration
+```python
+from langchain_qdrant import QdrantVectorStore
+from qdrant_client import QdrantClient
+from qdrant_client.http.models import Distance, VectorParams
+
+# Use persistent Qdrant (see @project-fundamentals for URLs)
+client = QdrantClient(host="localhost", port=6333)  # From project-fundamentals
+
+# Create collection (see @project-fundamentals for all values)
+client.create_collection(
+    collection_name="ai_usage_knowledge_index",  # From project-fundamentals
+    vectors_config=VectorParams(size=768, distance=Distance.COSINE),  # From project-fundamentals
+)
+
+vector_store = QdrantVectorStore(
+    client=client,
+    collection_name="ai_usage_knowledge_index",  # From project-fundamentals
+    embedding=embedding_model,
+)
+```
+
+### Retriever Configuration
+```python
+# k value from project-fundamentals
+retriever = vector_store.as_retriever(search_kwargs={"k": 5})  # From project-fundamentals
+```
+
+## Document Processing
+
+### Async Operations in Notebooks
+```python
+# ALWAYS apply nest_asyncio when using async loaders in notebooks
+import nest_asyncio
+nest_asyncio.apply()
+```
+
+### Document Loading
+```python
+from langchain_community.document_loaders import DirectoryLoader, PyMuPDFLoader
+
+directory_loader = DirectoryLoader(
+    "data",
+    glob="**/*.pdf",  # From project-fundamentals
+    loader_cls=PyMuPDFLoader  # From project-fundamentals
+)
+documents = directory_loader.load()
+```
+
+### Text Splitting
+```python
+import tiktoken
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+def tiktoken_len(text):
+    # Tokenizer from project-fundamentals
+    tokens = tiktoken.get_encoding("cl100k_base").encode(text)  # From project-fundamentals
+    return len(tokens)
+
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=750,  # From project-fundamentals
+    chunk_overlap=0,  # From project-fundamentals
+    length_function=tiktoken_len,
+)
+
+chunks = text_splitter.split_documents(documents)
+```
+
+## Error Handling
+
+### Service Verification
+```python
+import requests
+
+# Check if Ollama is running (URL from project-fundamentals)
+try:
+    response = requests.get('http://localhost:11434/api/tags')  # From project-fundamentals
+    if response.status_code == 200:
+        print("✅ Ollama is running!")
+    else:
+        print("❌ Ollama is not responding properly")
+except requests.exceptions.ConnectionError:
+    print("❌ Cannot connect to Ollama")
+```
+
+### Context Fallback
+- Use "I don't know" fallback for missing context
+- Handle ConnectionError for Docker services
+- Verify models are pulled before use
+
+## Streaming Patterns
+
+### Real-time Output
+```python
+# Stream for real-time output
+for chunk in chat_model.stream(prompt):
+    print(chunk.content, end="", flush=True)
+```
+
+## Common Extensions
+
+### Human-in-the-Loop
+```python
+from langgraph.prebuilt import interrupt
+
+def human_review(state: State) -> State:
+    if needs_review(state):
+        human_input = interrupt("Review needed")
+        # Process human input
+    return state
+```
+
+### Subgraphs
+```python
+# Create subgraph for complex logic
+subgraph = StateGraph(SubState)
+# ... define subgraph nodes
+compiled_subgraph = subgraph.compile()
+
+# Add as node in main graph
+graph_builder.add_node("complex_logic", compiled_subgraph)
+```
+
+## References
+- Use `@filename.py` to reference specific files
+- Import from langchain_ollama for Ollama models
+- Import from langchain_qdrant for vector store
+- Import from langgraph.graph for StateGraph
