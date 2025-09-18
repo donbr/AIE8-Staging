@@ -26,7 +26,7 @@ Before starting the main assignment, run the `Ollama_Setup_and_Testing.ipynb` no
 - Test model inference with LangChain connectors
 - Ensure all models are properly downloaded
 
-Run the main notebook and complete the contained tasks:
+Run the [main notebook](Assignment_Introduction_to_LCEL_and_LangGraph_LangChain_Powered_RAG.ipynb) and complete the contained tasks:
 
 - 🤝 Breakout Room #1:
     1. Install LangGraph
@@ -59,7 +59,7 @@ Next, run the LangSmith and Evaluation notebook and complete the contained tasks
 # Submitting Your Homework
 
 Follow these steps to prepare and submit your homework:
-1. Create a branch of your `AIE7` repo to track your changes. Example command: `git checkout -b s04-assignment`
+1. Create a branch of your `AIE8` repo to track your changes. Example command: `git checkout -b s04-assignment`
 2. Responding to the activities and questions in both the `Assignment_Introduction_to_LCEL_and_LangGraph_LangChain_Powered_RAG.ipynb`and `LangSmith_and_Evaluation` notebooks:
     + Option 1: Provide your responses in a separate markdown document:
       + Create a markdown document in the `04_Production_RAG` folder of your assignment branch (for example “ACTIVITIES_QUESTIONS.md”):

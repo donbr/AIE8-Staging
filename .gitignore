@@ -1,2 +1,5 @@
 .DS_Store
 .env
+
+# Ignore cloned data repository
+04_Production_RAG/DataRepository/
