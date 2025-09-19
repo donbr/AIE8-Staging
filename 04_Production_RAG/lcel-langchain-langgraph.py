@@ -5,10 +5,10 @@
 import os
 import getpass
 
-# Uncomment the lines below to enable LangSmith tracing
-os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_API_KEY"] = getpass.getpass("Enter your LangSmith API key: ")
-os.environ["LANGCHAIN_PROJECT"] = "RAG-Assignment"
+# Enable LangSmith tracing
+os.environ["LANGSMITH_TRACING"] = "true"
+os.environ["LANGSMITH_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
+os.environ["LANGSMITH_PROJECT"] = "RAG-Assignment"
 
 # Verify setup (uncomment to check)
 print("LangSmith tracing enabled:", os.getenv("LANGCHAIN_TRACING_V2", "false"))
@@ -104,25 +104,63 @@ def retrieve(state: State) -> State:
 # %%
 from langchain_core.prompts import ChatPromptTemplate
 
-HUMAN_TEMPLATE = """
-#CONTEXT:
+SYSTEM_MISTRAL = (
+    "You are a precise research assistant.\n"
+    "Use ONLY the provided context to answer.\n"
+    "Do NOT include chain-of-thought, hidden reasoning, or <think> blocks.\n"
+    "If the answer is not in the context, reply exactly: I don't know.\n"
+    "Prefer a short, bullet-style answer with concrete facts.\n"
+    "If a page number exists in metadata, include simple citations like (p. N).\n"
+)
+
+HUMAN_TEMPLATE = """\
+# CONTEXT
 {context}
 
-QUERY:
+# QUERY
 {query}
 
-Use the provide context to answer the provided user query. Only use the provided context to answer the query. If you do not know the answer, or it's not contained in the provided context response with "I don't know"
+Rules:
+- Answer using ONLY the context above.
+- If not found in context, reply exactly: I don't know.
+- Keep it concise. Include (p. N) where metadata has a page number.
 """
 
 chat_prompt = ChatPromptTemplate.from_messages([
-    ("human", HUMAN_TEMPLATE)
+    ("system", SYSTEM_MISTRAL),
+    ("human", HUMAN_TEMPLATE),
 ])
+
+
+# %%
+# OpenAI GPT style prompt
+# from langchain_core.prompts import ChatPromptTemplate
+
+# HUMAN_TEMPLATE = """
+# #CONTEXT:
+# {context}
+
+# QUERY:
+# {query}
+
+# Use the provide context to answer the provided user query. Only use the provided context to answer the query. If you do not know the answer, or it's not contained in the provided context response with "I don't know"
+# """
+
+# chat_prompt = ChatPromptTemplate.from_messages([
+#     ("human", HUMAN_TEMPLATE)
+# ])
 
 # %%
 from langchain_ollama import ChatOllama
 
 # Using gpt-oss:20b which is a powerful and efficient local model
-ollama_chat_model = ChatOllama(model="gpt-oss:20b", temperature=0.6)
+# ollama_chat_model = ChatOllama(model="gpt-oss:20b", temperature=0.6)
+# ollama_chat_model = ChatOllama(model="qwen3:0.6b", temperature=0.6)
+
+# ollama_chat_model = ChatOllama(model="qwen3:4b", temperature=0.6)
+
+ollama_chat_model = ChatOllama(model="mistral-nemo:12b", temperature=0.2, num_ctx=8192, stop=["<think>", "</think>"])
+
 
 # %%
 ollama_chat_model.invoke(chat_prompt.invoke({"context" : "Paris is the capital of France", "query" : "What is the capital of France?"}))
