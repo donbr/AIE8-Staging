@@ -34,6 +34,15 @@ from .meta_supervisor import (
     join_graph
 )
 
+from .transcription_workflow import (
+    create_transcription_workflow_graph,
+    create_batch_transcription_graph,
+    create_simple_transcription_graph,
+    transcribe_single_file,
+    transcribe_batch_files,
+    AudioTranscriptionState
+)
+
 __all__ = [
     # Simple RAG
     "create_simple_rag_graph",
@@ -60,6 +69,14 @@ __all__ = [
     "create_meta_nodes_for_notebook",
     "get_last_message",
     "join_graph",
+
+    # Audio Transcription Workflow
+    "create_transcription_workflow_graph",
+    "create_batch_transcription_graph",
+    "create_simple_transcription_graph",
+    "transcribe_single_file",
+    "transcribe_batch_files",
+    "AudioTranscriptionState",
 ]
 
 
@@ -97,6 +114,25 @@ def get_available_graphs():
             "state_class": "MetaSupervisorState",
             "factory_function": "create_complete_multi_agent_system",
             "features": ["All teams", "Full coordination", "Production ready"]
+        },
+        "transcription_workflow": {
+            "description": "Complete audio transcription workflow with LLM post-processing",
+            "state_class": "AudioTranscriptionState",
+            "factory_function": "create_transcription_workflow_graph",
+            "features": ["Multi-backend transcription", "LLM cleaning", "Document generation"],
+            "nodes": ["Preprocessor", "Transcriber", "Processor", "Generator"]
+        },
+        "batch_transcription": {
+            "description": "Batch audio transcription for multiple files",
+            "state_class": "AudioTranscriptionState",
+            "factory_function": "create_batch_transcription_graph",
+            "features": ["Batch processing", "Error handling", "Progress tracking"]
+        },
+        "simple_transcription": {
+            "description": "Basic audio transcription without LLM processing",
+            "state_class": "AudioTranscriptionState",
+            "factory_function": "create_simple_transcription_graph",
+            "features": ["Fast processing", "Basic transcription", "Minimal dependencies"]
         }
     }
 
@@ -137,6 +173,12 @@ def create_graph_from_config(
         return create_meta_supervisor_graph(config, **kwargs)
     elif graph_type == "complete_system":
         return create_complete_multi_agent_system(config, **kwargs)
+    elif graph_type == "transcription_workflow":
+        return create_transcription_workflow_graph(config, **kwargs)
+    elif graph_type == "batch_transcription":
+        return create_batch_transcription_graph(config, **kwargs)
+    elif graph_type == "simple_transcription":
+        return create_simple_transcription_graph(config, **kwargs)
     else:
         raise ValueError(f"Graph creation not implemented for: {graph_type}")
 

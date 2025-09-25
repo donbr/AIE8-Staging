@@ -4,7 +4,9 @@ Provides clean abstraction for service creation based on configuration,
 following production patterns for dependency injection and service management.
 """
 
-from typing import Optional
+from typing import Optional, Any, Union
+import asyncio
+import logging
 
 from langchain_core.language_models import BaseChatModel
 from langchain_openai import ChatOpenAI
@@ -12,6 +14,14 @@ from langchain_openai.embeddings import OpenAIEmbeddings
 from langchain_community.tools.tavily_search import TavilySearchResults
 
 from ..config.configuration import Configuration, SearchAPI
+
+# MCP integration (optional)
+try:
+    from ..mcp_integration import get_compatibility_layer
+    MCP_INTEGRATION_AVAILABLE = True
+except ImportError:
+    MCP_INTEGRATION_AVAILABLE = False
+    get_compatibility_layer = None
 
 
 def create_chat_model(
@@ -60,7 +70,7 @@ def create_embedding_model(config: Configuration) -> OpenAIEmbeddings:
 def create_search_tool(
     config: Configuration,
     max_results: Optional[int] = None
-) -> Optional[TavilySearchResults]:
+) -> Optional[Union[TavilySearchResults, Any]]:
     """Create a search tool instance based on configuration.
 
     Args:
@@ -70,6 +80,29 @@ def create_search_tool(
     Returns:
         Configured search tool instance or None if search is disabled
     """
+    logger = logging.getLogger(__name__)
+
+    # Try MCP integration first if enabled
+    if MCP_INTEGRATION_AVAILABLE and config.is_mcp_enabled():
+        search_preference = config.get_search_preference()
+        if search_preference == "mcp":
+            try:
+                # Use asyncio to get MCP tool
+                compatibility_layer = get_compatibility_layer(config)
+                mcp_tool = asyncio.run(compatibility_layer.get_search_tool(
+                    max_results=max_results or 5
+                ))
+                if mcp_tool is not None:
+                    logger.info("Using MCP search tool")
+                    return mcp_tool
+            except Exception as e:
+                logger.warning(f"Failed to create MCP search tool: {e}")
+                if not config.mcp_fallback_to_langchain:
+                    raise
+
+    # Fall back to LangChain implementation
+    logger.info("Using LangChain search tool")
+
     # Handle both enum and string values due to use_enum_values=True
     search_api_value = config.search_api
     if isinstance(search_api_value, SearchAPI):

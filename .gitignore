@@ -1,2 +1,14 @@
 .DS_Store
 .env
+
+# add pycache files
+
+# add .venv files at all levels
+**/.venv/
+**/venv/
+
+# add .env files at all levels
+**/.env
+
+# add .claude files at all levels
+**/.claude
