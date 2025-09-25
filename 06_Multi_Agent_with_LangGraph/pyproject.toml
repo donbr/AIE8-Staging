@@ -14,3 +14,8 @@ dependencies = [
     "pymupdf>=1.26.4",
     "pyppeteer>=2.0.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]
