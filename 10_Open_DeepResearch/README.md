@@ -31,3 +31,26 @@ Run the notebook and complete the following:
 - Make a social media post about your final application and tag @AIMakerspace
 - Share 3 lessons learned
 - Share 3 lessons not learned
+
+# Submitting Your Homework
+
+### Main Homework Assignment
+
+Follow these steps to prepare and submit your homework assignment:
+1. Create a branch of your `AIE8` repo to track your changes. Example command: `git checkout -b s10-assignment`
+2. Study the `open-deep-research.ipynb` notebook as you run it.
+3. Commit, and push your completed notebook to your `origin` repository. _NOTE: Do not merge it into your main branch._
+5. Record a Loom video reviewing the content of your completed notebook
+6. Make sure to include all of the following on your Homework Submission Form:
+    + The GitHub URL to the `open-deep-research.ipynb` notebook _on your assignment branch (not main)_
+    + The URL to your Loom Video
+    + Your Three lessons learned/not yet learned
+    + The URLs to any social media posts (LinkedIn, X, Discord, etc.) ⬅️ _easy Extra Credit points!_
+
+### OPTIONAL: 🚧 Advanced Build Assignment 🚧
+>***NOTE: There is no Advanced Build Assignment for this session.***
+>
+>That said, when you have some time (even if it is after the bootcamp!) be sure to work through the Next Steps at the end of this notebook:
+>1. Extend and enhance the system via additional tools, prompts, changing models, persistence, etc
+>2. Practice production deploy processes
+>3. Learn more by studying the linked docucmentation
