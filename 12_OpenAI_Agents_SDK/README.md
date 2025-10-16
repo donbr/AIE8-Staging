@@ -68,27 +68,31 @@ Feel free to reach out if you're curious or would like to collaborate on similar
 ### Main Homework Assignment
 
 Follow these steps to prepare and submit your homework assignment:
-1. Create a branch of your `AIE7` repo to track your changes. Example command: `git checkout -b s12-assignment`
-2. Respond to the questions in the `OpenAI_Agents_SDK.ipynb` notebook:
-    + Edit the markdown cells with the questions then enter your responses
-    + NOTE: Remember to create a header (example: `##### ✅ Answer:`) to help the grader find your responses
-3. Commit, and push your completed notebook to your `origin` repository. _NOTE: Do not merge it into your main branch._
-4. Record a Loom video reviewing the content of your completed notebooks
-5. Make sure to include all of the following on your Homework Submission Form:
+1. Create a branch of your `AIE8` repo to track your changes. Example command: `git checkout -b s12-assignment`
+2. Respond to the questions in the `OpenAI_Agents_SDK.ipynb` notebook by editing the markdown cells with the questions then entering your responses
+3. Complete the activities in the notebook
+4. Commit, and push your completed notebook to your `origin` repository. _NOTE: Do not merge it into your main branch._
+5. Record a Loom video reviewing the content of your completed notebook
+6. Make sure to include all of the following on your Homework Submission Form:
     + The GitHub URL to the `12_OpenAI_Agents_SDK` folder _on your assignment branch (not main)_
     + The URL to your Loom Video
     + Your _Three Lessons Learned / Not Yet Learned_
     + The URLs to any social media posts (LinkedIn, X, Discord, etc.) ⬅️ _easy Extra Credit points!_
 
-### OPTIONAL: Advanced Build Assignment _(Can be done in lieu of the Main Homework Assignnment)_
+
+### OPTIONAL: 🚧 Advanced Build Assignment 🚧
+<details>
+  <summary>(<i>Open this section for the submission instructions.</i>)</summary>
 
 Follow these steps to prepare and submit your homework assignment:
-1. Create a branch of your `AIE7` repo to track your changes. Example command: `git checkout -b s12-assignment`
-2. Create a notebook or Python script that implements a PRD Generator Agent
-3. Commit, and push your completed solution to your `origin` repository. _NOTE: Do not merge it into your main branch._
-4. Record a Loom video demonstrating your solution.
+1. Create a branch of your `AIE8` repo to track your changes. Example command: `git checkout -b s12-assignment`
+2. Create a notebook that implements the requirements outlined above for creating a PRD helper agent.
+3. Commit, and push your completed notebook to your `origin` repository. _NOTE: Do not merge it into your main branch._
+4. Record a Loom video reviewing the content of your completed notebook.
 5. Make sure to include all of the following on your Homework Submission Form:
-    + The GitHub URL to the source of the solution you created for the Advanced Build Assignment _on your assignment branch_
+    + The GitHub URL to the notebook you created for the Advanced Build Assignment _on your assignment branch_
     + The URL to your Loom Video
     + Your _Three Lessons Learned / Not Yet Learned_
     + The URLs to any social media posts (LinkedIn, X, Discord, etc.) ⬅️ _easy Extra Credit points!_
+
+</details>
