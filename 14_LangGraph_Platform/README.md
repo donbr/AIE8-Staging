@@ -53,10 +53,53 @@ Run the repository and complete the following:
 
 What is the purpose of the `chunk_overlap` parameter when using `RecursiveCharacterTextSplitter` to prepare documents for RAG, and what trade-offs arise as you increase or decrease its value?
 
+##### ✅ Answer:
+_(enter answer here)_
+
 #### ❓ Question:
 
 Your retriever is configured with `search_kwargs={"k": 5}`. How would adjusting `k` likely affect RAGAS metrics such as Context Precision and Context Recall in practice, and why?
 
+##### ✅ Answer:
+_(enter answer here)_
+
 #### ❓ Question:
 
 Compare the `agent` and `agent_helpful` assistants defined in `langgraph.json`. Where does the helpfulness evaluator fit in the graph, and under what condition should execution route back to the agent vs. terminate?
+
+##### ✅ Answer:
+_(enter answer here)_
+
+# Main Homework Assignment
+
+Follow these steps to prepare and submit your homework assignment:
+1. Create a branch of your `AIE8` repo to track your changes. Example command: `git checkout -b s14-assignment`
+2. Respond to the questions above this section of this README.md by editing the file and replacing "_(enter answer here)_" with your responses
+3. Commit, and push your completed notebook to your `origin` repository. _NOTE: Do not merge it into your main branch._
+4. Record a Loom video reviewing the content of your completed notebook
+5. Make sure to include all of the following on your Homework Submission Form:
+    + The GitHub URL to the `README.md` file _on your assignment branch (not main)_
+    + The URL to your Loom Video
+    + Your Three Lessons Learned/Not Yet Learned
+    + The URLs to any social media posts (LinkedIn, X, Discord, etc.) ⬅️ _easy Extra Credit points!_
+
+
+### OPTIONAL: 🚧 Advanced Build Assignment 🚧
+<details>
+  <summary>(<i>Open this section for the submission instructions.</i>)</summary>
+
+Follow these steps to prepare and submit your homework assignment:
+1. Create a branch of your `AIE8` repo to track your changes. Example command: `git checkout -b s14-assignment`
+2. Create your MCP server
+3. Add it to the existing graph's tools
+4. Deploy it ***locally***
+5. Validate the graph uses the MCP server's tools
+6. Commit, and push your changes to your `origin` repository. _NOTE: Do not merge it into your main branch._
+7. Record a Loom video reviewing the content of your completed notebook.
+8. Make sure to include all of the following on your Homework Submission Form:
+    + The GitHub URL to the notebook you created for the Advanced Build Assignment _on your assignment branch_
+    + The URL to your Loom Video
+    + Your Three Lessons Learned/Not Yet Learned
+    + The URLs to any social media posts (LinkedIn, X, Discord, etc.) ⬅️ _easy Extra Credit points!_
+
+</details>
