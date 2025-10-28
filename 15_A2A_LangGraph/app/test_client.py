@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import httpx
 
-from a2a.client import A2ACardResolver, A2AClient
+from a2a.client import A2ACardResolver, ClientFactory, ClientConfig
 from a2a.types import (
     AgentCard,
     MessageSendParams,
@@ -107,10 +107,17 @@ async def main() -> None:
             ) from e
 
         # --8<-- [start:send_message]
-        client = A2AClient(
-            httpx_client=httpx_client, agent_card=final_agent_card_to_use
+        # Create ClientFactory with JSON-RPC transport
+        factory = ClientFactory(
+            ClientConfig(
+                httpx_client=httpx_client,
+                # JSON-RPC is the default transport when not specified
+            )
         )
-        logger.info('A2AClient initialized.')
+
+        # Create client using the factory
+        client = factory.create(card=final_agent_card_to_use)
+        logger.info('A2A Client (via ClientFactory) initialized.')
 
         send_message_payload: dict[str, Any] = {
             'message': {
